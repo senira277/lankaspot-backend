@@ -1,9 +1,6 @@
 package com.lankaspot.server.controller;
 
-import com.lankaspot.server.dto.openRetrievals.AllCategories;
-import com.lankaspot.server.dto.openRetrievals.AllCities;
-import com.lankaspot.server.dto.openRetrievals.AllDistricts;
-import com.lankaspot.server.dto.openRetrievals.AllFeatures;
+import com.lankaspot.server.dto.openRetrievals.*;
 import com.lankaspot.server.response.LankaspotResponse;
 import com.lankaspot.server.service.OpenRetrievalService;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +43,11 @@ public class OpenRetrievalsController {
         return ResponseEntity.ok(
                 openRetrievalService.getAllFeatures(categoryId)
         );
+    }
+
+    @GetMapping("/get-all-functional-groups")
+    public ResponseEntity<LankaspotResponse<AllFunctionalGroups>> getAllFunctionalGroups() {
+        log.info("Fetching all functional groups");
+        return ResponseEntity.ok(openRetrievalService.getAllFunctionalGroups());
     }
 }

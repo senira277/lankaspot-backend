@@ -45,8 +45,8 @@ public class Advertisement {
     @Column(name = "city", nullable = false, length = 100)
     private String city;
 
-    @Column(name = "area", length = 100)
-    private String area;
+    @Column(name = "town", length = 100)
+    private String town;
 
     @Column(name = "address", columnDefinition = "TEXT")
     private String address;
@@ -88,29 +88,4 @@ public class Advertisement {
 
     @PreUpdate
     void updateTimestamp() { updatedAt = LocalDateTime.now(); }
-
-    public AdvertisementStatus getStatus() { return status; }
-    public void setStatus(AdvertisementStatus status) { this.status = status; }
-    public Long getId() { return id; }
-    public UUID getAdvertisementRef() { return advertisementRef; }
-    public User getAdvertiser() { return advertiser; }
-    public String getTitle() { return title; }
-    public String getSlug() { return slug; }
-    public String getDescription() { return description; }
-    public java.math.BigDecimal getPrice() { return price; }
-    public String getDistrict() { return district; }
-    public String getCity() { return city; }
-    public String getArea() { return area; }
-    public String getAddress() { return address; }
-    public java.time.LocalDateTime getExpiresAt() { return expiresAt; }
-    public void setExpiresAt(java.time.LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
-    public AdvertisementTier getCurrentTier() { return currentTier; }
-    public void setCurrentTier(AdvertisementTier currentTier) { this.currentTier = currentTier; }
-    public Long getQueueNumber() { return queueNumber; }
-    public void setQueueNumber(Long queueNumber) { this.queueNumber = queueNumber; }
-    public Integer getSortOrder() { return sortOrder; }
-    public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public Category getCategory(){return category;}
 }

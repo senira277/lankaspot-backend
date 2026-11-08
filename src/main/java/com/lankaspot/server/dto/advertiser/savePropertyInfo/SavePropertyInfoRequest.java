@@ -1,5 +1,6 @@
 package com.lankaspot.server.dto.advertiser.savePropertyInfo;
 
+import com.lankaspot.server.dto.advertiser.advertisement.FunctionalGroupDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
@@ -41,6 +42,9 @@ public class SavePropertyInfoRequest {
 
     @NotNull
     private Long cityId;
+
+    @Valid
+    private FunctionalGroupDTO functionalGroup;
 
     @NotBlank
     @Size(max = 100)

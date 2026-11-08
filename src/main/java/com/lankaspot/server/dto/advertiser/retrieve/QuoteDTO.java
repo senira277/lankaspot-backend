@@ -1,7 +1,9 @@
 package com.lankaspot.server.dto.advertiser.retrieve;
 
+import com.lankaspot.server.dto.advertiser.advertisement.FunctionalGroupDTO;
 import com.lankaspot.server.enums.AdQuoteStatus;
 import com.lankaspot.server.enums.AdSource;
+import com.lankaspot.server.enums.ReviewerApprovalStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,6 +11,9 @@ import java.util.List;
 
 
 public record QuoteDTO(
+
+    //Functional group
+    FunctionalGroupDTO functionalGroup,
     // Quote metadata
     Long id,
     Long quoteRef,
@@ -35,7 +40,9 @@ public record QuoteDTO(
     String nearestLandmark,
     String address,
 
-    String coverImage
+    String coverImage,
+    ReviewerApprovalStatus reviewerApprovalStatus
+
 ){}
 
 

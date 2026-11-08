@@ -28,14 +28,21 @@ public class PublicPayhereController {
             notifyService.insertNotification(params);
 
             log.info("Successfully saved Payhere notify response.");
-            log.info("Processing Ledgers...");
-            notifyService.handleLedger(params);
+            log.info("Processing Registry Update...");
+            notifyService.updateRegistry(params);
 
-            log.info("Successfully processed ledgers!");
+            log.info("Successfully saved Registry update.");
+            log.info("Processing Ledgers...");
+            notifyService.handleLedger(params.get("order_id"));
+
+            log.info("Successfully processed Ledgers!");
             log.info("Processing Fulfillment...");
-            notifyService.handleFulfilment(params);
+            Map<String, Object> emailArgs = notifyService.handleFulfilment(params);
 
             log.info("Successfully processed fulfillment!");
+            log.info("Handling Email Services...");
+            notifyService.notifyFulfillment(emailArgs);
+
             log.info("Successfully handled PayHere notification.");
             return ResponseEntity.ok("OK");
         } catch (InvalidPayhereNotificationException e) {
@@ -43,4 +50,6 @@ public class PublicPayhereController {
             return ResponseEntity.badRequest().body("Invalid");
         }
     }
+
+
 }

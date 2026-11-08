@@ -11,4 +11,6 @@ public interface PayHerePaymentNotificationRepository extends JpaRepository<PayH
 
     List<PayHerePaymentNotification> findByPaymentIdOrderByReceivedAtDesc(
             String paymentId);
+
+    Boolean existsByOrderIdAndPaymentId(String orderId, String paymentId);
 }

@@ -2,6 +2,7 @@ package com.lankaspot.server.dto.advertiser.retrieve;
 
 import com.lankaspot.server.enums.MediaStatus;
 import com.lankaspot.server.enums.MediaType;
+import com.lankaspot.server.enums.ReviewerApprovalStatus;
 import com.lankaspot.server.model.AdQuoteMedia;
 
 
@@ -12,7 +13,8 @@ public record MediaDefDTO(
         String publicId,
         Integer sortOrder,
         boolean primary,
-        MediaStatus mediaStatus
+        MediaStatus mediaStatus,
+        ReviewerApprovalStatus reviewerApprovalStatus
 ) {
     public static MediaDefDTO from(AdQuoteMedia media) {
         return new MediaDefDTO(
@@ -22,7 +24,8 @@ public record MediaDefDTO(
                 media.getPublicId(),
                 media.getSortOrder(),
                 media.isPrimary(),
-                media.getMediaStatus()
+                media.getMediaStatus(),
+                media.getReviewerApprovalStatus()
         );
     }
 }

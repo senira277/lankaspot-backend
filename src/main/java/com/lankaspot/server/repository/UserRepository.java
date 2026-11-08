@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByKeycloakUserId(String keycloakUserId);
+
 }

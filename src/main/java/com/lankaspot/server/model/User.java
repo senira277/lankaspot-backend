@@ -1,9 +1,13 @@
 package com.lankaspot.server.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
+@Data
+@NoArgsConstructor
 public class User {
 
     @Id

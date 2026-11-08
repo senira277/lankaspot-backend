@@ -2,6 +2,7 @@ package com.lankaspot.server.model;
 
 import com.lankaspot.server.enums.MediaStatus;
 import com.lankaspot.server.enums.MediaType;
+import com.lankaspot.server.enums.ReviewerApprovalStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,4 +40,20 @@ public class AdQuoteMedia {
 
     @Column(name = "is_primary", nullable = false)
     private boolean primary = false;
+
+    @Column(name = "version")
+    private Integer version = 0;
+
+    @Column(name = "cache_version")
+    private Long cacheVersion = 0L;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reviewer_approval_status", length = 20)
+    private ReviewerApprovalStatus reviewerApprovalStatus =     ReviewerApprovalStatus.PENDING_REVIEW;
+
+    public int nextAvailableVersion() {
+        return version + 1;
+    }
+
+
 }

@@ -4,6 +4,7 @@ public enum MediaStatus {
     ACTIVE,
     PENDING_REVIEW,
     REQUESTED_DELETION,
-    REJECTED
+    REJECTED,
+    APPROVED
 
 }

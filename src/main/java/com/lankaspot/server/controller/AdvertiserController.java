@@ -1,5 +1,8 @@
 package com.lankaspot.server.controller;
 
+import com.lankaspot.server.dto.advertiser.advertisement.AdvertisementDTO;
+import com.lankaspot.server.dto.advertiser.advertisement.GetAdvertisementDTOWithReviewerComment;
+import com.lankaspot.server.dto.advertiser.advertisement.GetAllAdvertisementSummaryResponse;
 import com.lankaspot.server.dto.advertiser.discount.ValidateDiscountCodeRequest;
 import com.lankaspot.server.dto.advertiser.discount.ValidateDiscountCodeResponseData;
 import com.lankaspot.server.dto.advertiser.payment.PayhereCheckoutRequest;
@@ -132,6 +135,64 @@ public class AdvertiserController {
         log.info("Checking payment status for orderId: {} by user: {}", orderId, authentication.getName());
         return ResponseEntity.ok(advertiserService.checkPaymentStatus(orderId,authentication));
     }
+
+    @GetMapping("/get-all-advertisements")
+    public ResponseEntity<LankaspotResponse<GetAllAdvertisementSummaryResponse>> getAllAdvertisements(@RequestParam int page, @RequestParam int size, Authentication authentication) {
+        log.info("Fetching all advertisements for user: {}", authentication.getName());
+        return ResponseEntity.ok(advertiserService.getAllAdvertisements(authentication, page, size));
+    }
+
+    @GetMapping("/get-advertisement")
+    public ResponseEntity<LankaspotResponse<GetAdvertisementDTOWithReviewerComment>> getAdvertisement(@RequestParam String advertisementRef, Authentication authentication) {
+        log.info("Fetching advertisement details for advertisementRef: {} by user: {}", advertisementRef, authentication.getName());
+        return ResponseEntity.ok(advertiserService.getAdvertisementByRef(advertisementRef, authentication));
+    }
+
+    @PostMapping("/amend-property-info")
+    public ResponseEntity<LankaspotResponse<SaveAdvertPropertyInfoResponseData>> amendPropertyInfo(@Valid @RequestBody SavePropertyInfoRequest request, Authentication authentication) {
+        log.info("Amending property info for advertiser: {}", authentication.getName());
+        return ResponseEntity.ok(advertiserService.amendPropertyInfo(request, authentication));
+    }
+
+    @PostMapping(value = "/amend-upload-media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<LankaspotResponse<UploadAdvertMediaResponseData>> amendUploadMedia(@RequestParam("quoteRef") Long quoteRef, @RequestParam("primaryIndex") Integer primaryIndex, @RequestPart("photos") List<MultipartFile> photos, Authentication authentication) {
+        return ResponseEntity.ok(
+                advertiserService.amendUploadMedia(
+                        quoteRef, primaryIndex, photos, authentication
+                )
+        );
+    }
+
+    @PostMapping("/amend-review-quote")
+    public ResponseEntity<LankaspotResponse<GetReviewQuoteByUserResponseData>> amendReviewQuote(@RequestBody ReviewQuoteByUserRequestDTO request, Authentication authentication) {
+        return ResponseEntity.ok(
+                advertiserService.amendReviewQuoteByUser(request, authentication)
+        );
+    }
+
+    @DeleteMapping("/amend-remove-media")
+    public ResponseEntity<LankaspotResponse<RemoveAdvertMediaResponseData>> amendRemoveMedia(@RequestParam("quoteRef") Long quoteRef, @RequestParam("mediaId") Long mediaId, Authentication authentication) {
+        return ResponseEntity.ok(
+                advertiserService.amendRequestMediaRemoval(
+                        quoteRef, mediaId, authentication
+                )
+        );
+    }
+
+    @PatchMapping("/media/amend-change-primary")
+    public ResponseEntity<LankaspotResponse<SetPrimaryAdvertMediaResponseData>> amendSetPrimaryMedia(@Valid @RequestBody SetPrimaryAdvertMediaRequest request, Authentication authentication) {
+        return ResponseEntity.ok(
+                advertiserService.amendSetPrimaryMedia(request, authentication)
+        );
+    }
+
+    @PatchMapping("/media/amend-set-all-media-primary-false")
+    public ResponseEntity<LankaspotResponse<?>> amendSetAllMediaPrimaryFalse(@Valid @RequestBody Long quoteRef, Authentication authentication) {
+        return ResponseEntity.ok(
+                advertiserService.amendSetAllMediaPrimaryFalse(quoteRef, authentication)
+        );
+    }
+
 
 
 }

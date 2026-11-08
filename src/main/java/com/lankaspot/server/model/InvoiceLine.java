@@ -33,7 +33,7 @@ public class InvoiceLine {
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
-
+    
     /** Shown under the name, e.g. "Listing visible for 1 month" or "Runs for 7 days". */
     @Column(name = "detail", length = 200)
     private String detail;

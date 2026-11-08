@@ -70,6 +70,8 @@ public class Invoice {
     /** PayHere payment_id. */
     @Column(name = "provider_reference", length = 100)
     private String providerReference;
+    @Column(name = "download_url", length = 500)
+    private String downloadUrl;
 
     /* ---------- Billed party and subject (frozen at issue time) ---------- */
 

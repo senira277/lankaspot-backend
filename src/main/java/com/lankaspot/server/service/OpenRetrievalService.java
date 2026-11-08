@@ -1,14 +1,8 @@
 package com.lankaspot.server.service;
 
 import com.lankaspot.server.dto.openRetrievals.*;
-import com.lankaspot.server.model.Category;
-import com.lankaspot.server.model.District;
-import com.lankaspot.server.model.City;
-import com.lankaspot.server.model.Feature;
-import com.lankaspot.server.repository.CategoryRepository;
-import com.lankaspot.server.repository.DistrictRepository;
-import com.lankaspot.server.repository.CityRepository;
-import com.lankaspot.server.repository.FeatureRepository;
+import com.lankaspot.server.model.*;
+import com.lankaspot.server.repository.*;
 import com.lankaspot.server.response.LankaspotResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +21,7 @@ public class OpenRetrievalService {
     private final DistrictRepository districtRepository;
     private final CityRepository cityRepository;
     private final FeatureRepository featureRepository;
+    private final FunctionalGroupRepository functionalGroupRepository;
 
     public LankaspotResponse<AllCategories> getAllCategories() {
         List<CategoryDTO> categories = categoryRepository.findAll()
@@ -73,6 +68,15 @@ public class OpenRetrievalService {
         return LankaspotResponse.success(
                 new AllFeatures(features),
                 "All features retrieved successfully"
+        );
+    }
+
+    public LankaspotResponse<AllFunctionalGroups> getAllFunctionalGroups() {
+        List<FunctionalGroup> functionalGroups = functionalGroupRepository.findAll();
+
+        return LankaspotResponse.success(
+                new AllFunctionalGroups(functionalGroups),
+                "All functional groups retrieved successfully"
         );
     }
 

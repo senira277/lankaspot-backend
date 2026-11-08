@@ -1,7 +1,6 @@
 package com.lankaspot.server.enums;
 
 public enum AdvertisementStatus {
-
     ACTIVE,
     INACTIVE,
     DRAFT,

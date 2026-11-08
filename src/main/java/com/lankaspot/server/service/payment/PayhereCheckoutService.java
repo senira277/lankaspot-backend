@@ -43,15 +43,18 @@ public class PayhereCheckoutService {
     private final DiscountCodeService discountCodeService;
     private final PaymentRegistryRepository registryRepository;
     private final EntityMappingRepository entityMappingRepository;
+    private final PayHerePaymentNotificationRepository payHerePaymentNotificationRepository;
+    private final SupportContactRepository supportContactRepository;
 
     @Transactional
     public LankaspotResponse<PayhereCheckoutResponseData> startCheckout(PayhereCheckoutRequest request, Authentication authentication) {
         UUID advertiserId = UUID.fromString(authentication.getName());
         Long quoteRef = request.quoteRef();
-        if(checkAlreadyPaid(quoteRef, authentication)) {
-            throw new PaymentAlreadyCompletedException("You have Already Purchased This Quote.");
+        List<SupportContact> supportContacts = supportContactRepository.findActiveSupportContacts();
+        if(checkPaymentRegistryExistsForQuote(quoteRef, authentication)) {
+            throw new PaymentAlreadyCompletedException("You have Already Purchased This Quote. Please contact " + supportContacts.get(0).getPhoneNumber() + " if you have any issues.");
         } else if (checkPolicyAlreadyCreated(quoteRef, authentication)) {
-            throw new PolicyAlreadyCreatedException("You have Already Created a Policy for This Quote.");
+            throw new PaymentAlreadyCompletedException("You have Already Created a Policy for This Quote. Please contact " + supportContacts.get(0).getPhoneNumber() + " if you have any issues.");
         }
 
         if (quoteRef == null) {
@@ -183,7 +186,7 @@ public class PayhereCheckoutService {
     }
 
     @Transactional(readOnly = true)
-    public Boolean checkAlreadyPaid(Long quoteRef, Authentication authentication) {
+    public Boolean checkPaymentRegistryExistsForQuote(Long quoteRef, Authentication authentication) {
         try{
             // check 1. If the quote exists and belongs to the authenticated user
             AdQuote quote = adQuoteRepository.findById(quoteRef)

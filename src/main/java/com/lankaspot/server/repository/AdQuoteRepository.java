@@ -2,6 +2,7 @@ package com.lankaspot.server.repository;
 import com.lankaspot.server.enums.AdQuoteStatus;
 import com.lankaspot.server.enums.PaymentRegistryStatus;
 import com.lankaspot.server.enums.PaymentStatus;
+import com.lankaspot.server.enums.ReviewerApprovalStatus;
 import com.lankaspot.server.model.AdQuote;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +12,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,4 +74,23 @@ public interface AdQuoteRepository extends JpaRepository<AdQuote, Long> {
                 PageRequest.of(0, 1)
         ).stream().findFirst();
     }
+
+    @Modifying
+    @Transactional
+    @Query("""
+    UPDATE AdQuote q
+    SET q.reviewerApprovalStatus = :approvalStatus,
+        q.status = :status
+    WHERE q.id = :quoteId
+    """)
+    int updateQuoteApprovalStatusAndStatus(
+            @Param("quoteId") Long quoteId,
+            @Param("approvalStatus") ReviewerApprovalStatus approvalStatus,
+            @Param("status") AdQuoteStatus status
+    );
+
+
+
+
+
 }
