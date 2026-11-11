@@ -1,15 +1,13 @@
 package com.lankaspot.server.service.notification;
 
-import com.lankaspot.server.constants.NotificationConstants;
+import com.lankaspot.server.dto.notification.CommonPageResponse;
 import com.lankaspot.server.dto.notification.GetAllNotificationsDTO;
 import com.lankaspot.server.enums.NotificationType;
 import com.lankaspot.server.enums.Role;
-import com.lankaspot.server.exception.AdvertisementNotFoundException;
 import com.lankaspot.server.exception.QuoteNotFoundException;
 import com.lankaspot.server.model.AdQuote;
 import com.lankaspot.server.model.AdQuoteMedia;
 import com.lankaspot.server.model.Notification;
-import com.lankaspot.server.model.PaymentRegistry;
 import com.lankaspot.server.repository.AdQuoteMediaRepository;
 import com.lankaspot.server.repository.AdQuoteRepository;
 import com.lankaspot.server.repository.NotificationRepository;
@@ -18,6 +16,9 @@ import com.lankaspot.server.service.AdvertisementService;
 import com.lankaspot.server.service.UtilService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,17 +42,15 @@ public class NotificationService {
     }
 
     // get all notifications for computed role
-    public List<Notification> findByUser(Authentication authentication) {
+    public Page<Notification> findByUser(Authentication authentication, int page, int size) {
         UUID userId = UUID.fromString(authentication.getName());
-
         //list of Notifications
-        return  notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId);
-
+        return  notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId, PageRequest.of(page,size));
 
     }
 
-    public List<Notification> findByRecipientId(UUID recipientId) {
-        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(recipientId);
+    public Page<Notification> findByRecipientId(UUID recipientId, int page, int size) {
+        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(recipientId, PageRequest.of(page,size));
     }
 
     public List<Notification> getAllSeenNotifications(Authentication authentication) {
@@ -124,14 +123,47 @@ public class NotificationService {
 
     //SERVICE METHODS
     @Transactional(readOnly = true)
-    public LankaspotResponse<GetAllNotificationsDTO> getAllNotifications(Authentication authentication) {
-        List<Notification> notifications = findByRecipientId(utilService.resolveUUID(authentication));
+    public LankaspotResponse<GetAllNotificationsDTO> getAllNotifications(Authentication authentication, int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page must be zero or greater");
+        }
+
+        if (size < 1) {
+            throw new IllegalArgumentException("Size must be greater than zero");
+        }
+        Page<Notification> notifications = findByRecipientId(utilService.resolveUUID(authentication), page, size);
         int unreadCount = unreadCount(authentication);
 
         return LankaspotResponse.success(
-                new GetAllNotificationsDTO(notifications, unreadCount),
+                new GetAllNotificationsDTO(notifications, unreadCount, (long) page, (long) size, (long) notifications.getTotalPages(), notifications.getTotalElements()),
                 "Successfully Retrieved all notifications"
         );
+    }
+
+    @Transactional
+    public LankaspotResponse<CommonPageResponse> markPageSeen(Authentication authentication, int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Page must be zero or greater");
+        }
+
+        if (size < 1) {
+            throw new IllegalArgumentException("Size must be greater than zero");
+        }
+
+        Page<Notification> notifications = findByRecipientId(utilService.resolveUUID(authentication), page, size);
+        notifications.forEach(this::markNotificationAsSeen);
+
+        return LankaspotResponse.success(new CommonPageResponse(page, size), "Successfully marked notifications as seen for page: " + page);
+    }
+
+    @Transactional
+    public LankaspotResponse<Boolean> markSingleSeen(Authentication authentication, String notificationId) {
+        UUID userId = utilService.resolveUUID(authentication);
+        Notification notification = notificationRepository.findByRecipientIdAndId(userId, Long.parseLong(notificationId))
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found for the given ID and user"));
+
+        markNotificationAsSeen(notification);
+        return LankaspotResponse.success(true, "Successfully marked notification as seen for ID: " + notificationId);
     }
 
 

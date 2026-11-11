@@ -36,7 +36,6 @@ public class ReviewerQueueService {
     private final ContactRepository contactRepository;
     private final AdvertisementReviewResubmitQueueRepository advertisementReviewResubmitQueueRepository;
     private final AdvertisementApprovalRepository advertisementApprovalRepository;
-    private final FunctionalGroupRepository functionalGroupRepository;
 
     public void enqueueAdvertisementFromQueue(Advertisement ad) {
         log.info("Enqueuing advertisement. advertisementId={}", ad.getId());
@@ -67,6 +66,13 @@ public class ReviewerQueueService {
             log.warn("Advertisement was not found in review queue. advertisementId={}",
                     ad.getId());
         }
+    }
+
+    public boolean isAdvertisementInReviewQueue(Advertisement ad) {
+        return advertisementReviewQueueRepository.existsByAdvertisementId(ad.getId());
+    }
+    public boolean isAdvertisementInResubmitQueue(Advertisement ad) {
+        return advertisementReviewResubmitQueueRepository.existsByAdvertisementId(ad.getId());
     }
 
     public ReviewerQueueDTO getAllAdvertisementsInQueue(int page, int size) {

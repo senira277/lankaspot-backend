@@ -88,6 +88,7 @@ public interface AdQuoteRepository extends JpaRepository<AdQuote, Long> {
             @Param("approvalStatus") ReviewerApprovalStatus approvalStatus,
             @Param("status") AdQuoteStatus status
     );
+    boolean existsByIdAndAdvertiserId(Long quoteId, UUID advertiserId);
 
 
 

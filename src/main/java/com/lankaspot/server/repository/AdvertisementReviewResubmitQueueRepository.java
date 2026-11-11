@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AdvertisementReviewResubmitQueueRepository extends JpaRepository<AdvertisementReviewResubmitQueue, Long> {
     AdvertisementReviewResubmitQueue findByAdvertisementId(Long advertisementId);
     Page<AdvertisementReviewResubmitQueue> findAllByOrderByCreatedAtAscIdAsc(Pageable pageable);
+    boolean existsByAdvertisementId(Long advertisementId);
 }

@@ -187,7 +187,7 @@ public class AdvertiserController {
     }
 
     @PatchMapping("/media/amend-set-all-media-primary-false")
-    public ResponseEntity<LankaspotResponse<?>> amendSetAllMediaPrimaryFalse(@Valid @RequestBody Long quoteRef, Authentication authentication) {
+    public ResponseEntity<LankaspotResponse<?>> amendSetAllMediaPrimaryFalse(@RequestParam Long quoteRef, Authentication authentication) {
         return ResponseEntity.ok(
                 advertiserService.amendSetAllMediaPrimaryFalse(quoteRef, authentication)
         );

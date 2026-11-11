@@ -1,6 +1,8 @@
 package com.lankaspot.server.repository;
 
 import com.lankaspot.server.model.Notification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,12 +10,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    List<Notification> findByRecipientIdOrderByCreatedAtDesc(UUID recipientId);
+
+
+    Page<Notification> findByRecipientIdOrderByCreatedAtDesc(UUID recipientId, Pageable pageable);
     List<Notification> findByRecipientIdAndSeenOrderByCreatedAtDesc(UUID recipientId,boolean seen);
     void  deleteByRecipientIdAndId(UUID recipientId, Long id);
+
+
 
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -37,5 +44,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     int deleteAllSeen(@Param("recipientId") UUID recipientId);
 
     int countByRecipientIdAndSeenFalse(UUID recipientId);
+
+    Optional<Notification> findByRecipientIdAndId(UUID recipientId, Long id);
 
 }

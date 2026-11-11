@@ -75,6 +75,16 @@ public class ReviewerService {
     public LankaspotResponse<ReviewerConfirmationResponse> reviewerConfirmation(ReviewConfirmationRequest request, Authentication authentication) {
         try {
             log.info("Processing reviewer confirmation for request: {}", request);
+
+            UUID advertisementRef = UUID.fromString(request.advertisementRef());
+            Advertisement advertisement = advertisementRepository.findByAdvertisementRef(advertisementRef)
+                    .orElseThrow(() -> new RuntimeException("Advertisement not found for ref: " + advertisementRef));
+
+
+            // identify whether review queue or resubmit queue
+            AtomicBoolean isInReviewQueue = new AtomicBoolean(false);
+            isInReviewQueue = reviewerQueueService.isAdvertisementInReviewQueue(advertisement) ? new AtomicBoolean(true) : new AtomicBoolean(false);
+
             //flag to spot if any media is rejected
             AtomicBoolean anyMediaRejected = new AtomicBoolean(false);
             AtomicBoolean quoteRejected = new AtomicBoolean(false);
@@ -128,9 +138,7 @@ public class ReviewerService {
 
             });
             // update quote(search advertisementRef for in AdPolicyRepository, then entity mapping-> get quote) status in AdQuoteRepository
-            UUID advertisementRef = UUID.fromString(request.advertisementRef());
-            Advertisement advertisement = advertisementRepository.findByAdvertisementRef(advertisementRef)
-                    .orElseThrow(() -> new RuntimeException("Advertisement not found for ref: " + advertisementRef));
+
 
             AdPolicy adPolicy = adPolicyRepository.findByAdvertisement_Id(advertisement.getId())
                     .orElseThrow(() -> new PolicyNotFoundException(request.advertisementRef()));
@@ -175,15 +183,9 @@ public class ReviewerService {
                 advertisementRepository.updateStatusById(advertisement.getId(), AdvertisementStatus.ACTIVE);
             } else {
                 //Reviewer REJECTED
-                boolean propertyAmendmentRequired =
-                        quote.getReviewerApprovalStatus()
-                                == ReviewerApprovalStatus.REJECTED;
+                boolean propertyAmendmentRequired = quoteRejected.get();
+                boolean mediaAmendmentRequired = anyMediaRejected.get();
 
-                boolean mediaAmendmentRequired = request.media().stream()
-                        .anyMatch(m ->
-                                m.reviewerApprovalStatus()
-                                        == ReviewerApprovalStatus.REJECTED
-                        );
 
                 // Build the base URL for the rejected advertisement
                 String RejectedBaseUrl = NotificationConstants.AD_REJECTED_REDIRECT_TO + "?advertisementRef=" + advertisement.getAdvertisementRef().toString();
@@ -224,8 +226,13 @@ public class ReviewerService {
             advertisementApproval.setDecisionAt(java.time.LocalDateTime.now());
             advertisementApprovalRepository.save(advertisementApproval);
 
-            //deque the advertisement from the review queue
-            queueService.dequeueAdvertisementFromQueue(advertisement);
+            //deque the advertisement from the relevant queue
+            if(isInReviewQueue.get()){
+                queueService.dequeueAdvertisementFromQueue(advertisement);
+            }else {
+                queueService.dequeueAdvertisementFromResubmitQueue(advertisement);
+            }
+
 
             //create response
             ReviewerConfirmationResponse response = new ReviewerConfirmationResponse(

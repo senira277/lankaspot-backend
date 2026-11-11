@@ -973,19 +973,6 @@ public class AdvertiserService {
                 quote.getStatus()
         );
 
-        if (!AMENDABLE_STATUSES.contains(quote.getStatus())) {
-            log.warn(
-                    "Media amendment rejected: quote status is not amendable. quoteRef={}, status={}",
-                    quoteRef,
-                    quote.getStatus()
-            );
-
-            throw new QuoteNotAmendableException(
-                    quoteRef,
-                    String.valueOf(quote.getStatus())
-            );
-        }
-
         log.info(
                 "Fetching existing non-rejected reviewer media. quoteRef={}",
                 quoteRef
@@ -1125,7 +1112,7 @@ public class AdvertiserService {
 
             List<UploadedAdvertMediaDTO> responseMedia =
                     adQuoteMediaRepository
-                            .findByAdQuote_IdOrderBySortOrderAscIdAsc(quoteRef)
+                            .findByAdQuote_IdAndMediaStatusNotOrderBySortOrderAscIdAsc(quoteRef,MediaStatus.REQUESTED_DELETION)
                             .stream()
                             .map(UploadedAdvertMediaDTO::from)
                             .toList();
@@ -1237,14 +1224,6 @@ public class AdvertiserService {
                 .filter(q -> Objects.equals(q.getAdvertiserId(), advertiserId))
                 .orElseThrow(() -> new QuoteNotFoundException(quoteRef));
 
-        if (!AMENDABLE_STATUSES.contains(quote.getStatus())) {
-            throw new QuoteNotAmendableException(
-                    quoteRef, String.valueOf(quote.getStatus())
-            );
-        } else if(quote.getReviewerApprovalStatus() != ReviewerApprovalStatus.REJECTED) {
-            throw new ReviewerAlreadyAcceptedThisAmendStepException(quoteRef, String.valueOf(quote.getReviewerApprovalStatus()));
-        }
-
         AdQuoteMedia media = adQuoteMediaRepository
                 .findByIdAndAdQuote_Id(mediaId, quoteRef)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -1285,14 +1264,6 @@ public class AdvertiserService {
                 .filter(q -> Objects.equals(q.getAdvertiserId(), advertiserId))
                 .orElseThrow(() -> new QuoteNotFoundException(quoteRef));
 
-        if (!AMENDABLE_STATUSES.contains(quote.getStatus())) {
-            throw new QuoteNotAmendableException(
-                    quoteRef, String.valueOf(quote.getStatus())
-            );
-        } else if(quote.getReviewerApprovalStatus() != ReviewerApprovalStatus.REJECTED) {
-            throw new ReviewerAlreadyAcceptedThisAmendStepException(quoteRef, String.valueOf(quote.getReviewerApprovalStatus()));
-        }
-
         List<AdQuoteMedia> mediaList =
                 adQuoteMediaRepository.findAllByQuoteIdForUpdate(quoteRef);
 
@@ -1304,7 +1275,7 @@ public class AdvertiserService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "The specified photo does not belong to this quote"
                 ));
-
+        log.info("Selected media for primary update: quoteRef={}, mediaId={}, mediaStatus={}", quoteRef, selected.getId(), selected.getMediaStatus());
         if (selected.getMediaStatus() == MediaStatus.REQUESTED_DELETION
                 || selected.getMediaStatus() == MediaStatus.REJECTED) {
             throw new IllegalArgumentException(
@@ -1314,14 +1285,8 @@ public class AdvertiserService {
         //first set all media to primary false, then set the selected media to primary true
         for (AdQuoteMedia media : mediaList) {
             media.setVersion(media.nextAvailableVersion());
-            media.setPrimary(false);
-        }
-
-        for (AdQuoteMedia media : mediaList) {
             media.setPrimary(Objects.equals(media.getId(), selected.getId()));
-            media.setVersion(media.nextAvailableVersion());
         }
-
         adQuoteMediaRepository.saveAll(mediaList);
         adQuoteMediaRepository.flush();
 
@@ -1381,16 +1346,10 @@ public class AdvertiserService {
         try{
             // get all media from quoteRef
             log.info("amendSetAllMediaPrimaryFalse started: quoteRef={}", quoteRef);
-            UUID advertiserId = UUID.fromString(authentication.getName());
-            AdQuote quote = adQuoteRepository.findByIdForUpdate(quoteRef)
-                    .filter(q -> Objects.equals(q.getAdvertiserId(), advertiserId))
-                    .orElseThrow(() -> new QuoteNotFoundException(quoteRef));
-
-            if (!AMENDABLE_STATUSES.contains(quote.getStatus())) {
-                throw new QuoteNotAmendableException(
-                        quoteRef, String.valueOf(quote.getStatus())
-                );
+            if (!adQuoteRepository.existsByIdAndAdvertiserId(quoteRef, UUID.fromString(authentication.getName()))) {
+                throw new QuoteNotFoundException(quoteRef);
             }
+
             List<AdQuoteMedia> mediaList =
                     adQuoteMediaRepository.findAllByQuoteIdForUpdate(quoteRef);
 

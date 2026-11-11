@@ -1,5 +1,6 @@
 package com.lankaspot.server.repository;
 
+import com.lankaspot.server.model.Advertisement;
 import com.lankaspot.server.model.AdvertisementReviewQueue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,5 +11,6 @@ public interface AdvertisementReviewQueueRepository extends JpaRepository<Advert
     Page<AdvertisementReviewQueue> findAllByOrderByCreatedAtAscIdAsc(
             Pageable pageable
     );
+    boolean existsByAdvertisementId(Long advertisementId);
 
 }
