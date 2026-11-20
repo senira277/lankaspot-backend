@@ -8,6 +8,15 @@ public record CacheInvalidationBody(
         CacheInvalidationEventType eventType,
         Long quoteId,
         UUID advertiserId,
-        Long cacheVersion
+        Long cacheVersion,
+        UUID advertisementRef
 ) {
+    public CacheInvalidationBody(
+            CacheInvalidationEventType eventType,
+            Long quoteId,
+            UUID advertiserId,
+            Long cacheVersion
+    ) {
+        this(eventType, quoteId, advertiserId, cacheVersion, null);
+    }
 }

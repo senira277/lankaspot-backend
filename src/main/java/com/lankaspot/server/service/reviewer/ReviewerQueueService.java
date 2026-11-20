@@ -1,7 +1,10 @@
 package com.lankaspot.server.service.reviewer;
 
 import com.lankaspot.server.dto.advertiser.advertisement.FunctionalGroupDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.*;
+import com.lankaspot.server.dto.common.ContactDTO;
+import com.lankaspot.server.dto.common.FeatureDefDTO;
+import com.lankaspot.server.dto.common.MediaDefDTO;
+import com.lankaspot.server.dto.common.QuoteDTO;
 import com.lankaspot.server.dto.reviewer.retrieve.*;
 import com.lankaspot.server.enums.ContactStatus;
 import com.lankaspot.server.enums.EntityMappingType;
@@ -253,6 +256,7 @@ public class ReviewerQueueService {
                     quote.getCity().getDistrict().getId(),
                     quote.getTown(),
                     quote.getNearestLandmark(),
+                    quote.getDistanceToNearestLandmarkInKm(),
                     quote.getAddress(),
                     coverImage,
                     quote.getReviewerApprovalStatus()

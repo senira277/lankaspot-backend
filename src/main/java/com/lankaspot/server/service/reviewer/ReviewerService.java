@@ -17,6 +17,7 @@ import com.lankaspot.server.service.AdvertiserService;
 import com.lankaspot.server.service.AuditLogService;
 import com.lankaspot.server.service.kafka.NotificationProducer;
 import com.lankaspot.server.service.notification.NotificationService;
+import com.lankaspot.server.service.LiveAdCardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -43,6 +44,7 @@ public class ReviewerService {
     private final AdvertiserService  advertiserService;
     private final NotificationProducer notificationProducer;
     private final NotificationService notificationService;
+    private final LiveAdCardService liveAdCardService;
 
     //get review queue for reviewer
     @Transactional(readOnly = true)
@@ -181,6 +183,10 @@ public class ReviewerService {
                 );
                 advertisementApproval.setStatus(ApprovalStatus.APPROVED);
                 advertisementRepository.updateStatusById(advertisement.getId(), AdvertisementStatus.ACTIVE);
+                liveAdCardService.upsert(advertisement, quote);
+
+                liveAdCardService.upsert(advertisement, quote);
+
             } else {
                 //Reviewer REJECTED
                 boolean propertyAmendmentRequired = quoteRejected.get();
@@ -211,6 +217,7 @@ public class ReviewerService {
                 );
                 advertisementApproval.setStatus(ApprovalStatus.REJECTED);
                 advertisementRepository.updateStatusById(advertisement.getId(), AdvertisementStatus.REJECTED);
+                liveAdCardService.delete(advertisement.getAdvertisementRef());
             }
 
             //add to Audit log

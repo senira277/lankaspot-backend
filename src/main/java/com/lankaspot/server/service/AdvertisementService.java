@@ -2,10 +2,10 @@ package com.lankaspot.server.service;
 
 import com.lankaspot.server.dto.advertiser.advertisement.AdvertisementDTO;
 import com.lankaspot.server.dto.advertiser.advertisement.FunctionalGroupDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.ContactDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.FeatureDefDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.MediaDefDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.QuoteDTO;
+import com.lankaspot.server.dto.common.ContactDTO;
+import com.lankaspot.server.dto.common.FeatureDefDTO;
+import com.lankaspot.server.dto.common.MediaDefDTO;
+import com.lankaspot.server.dto.common.QuoteDTO;
 import com.lankaspot.server.enums.ContactStatus;
 import com.lankaspot.server.enums.EntityMappingType;
 import com.lankaspot.server.enums.MediaStatus;
@@ -77,6 +77,7 @@ public class AdvertisementService {
                 quote.getCity().getDistrict().getId(),
                 quote.getTown(),
                 quote.getNearestLandmark(),
+                quote.getDistanceToNearestLandmarkInKm(),
                 quote.getAddress(),
                 coverImage,
                 quote.getReviewerApprovalStatus()
@@ -201,6 +202,17 @@ public class AdvertisementService {
                 .orElseThrow(() -> new AdvertisementNotFoundException(advertisementRef.toString()));
 
         return advertisement.getAdvertiser().getEmail();
+    }
+
+    public AdQuote getQuoteByAdvertisementRef(UUID advertisementRef) {
+        Advertisement advertisement = advertisementRepository.findByAdvertisementRef(advertisementRef)
+                .orElseThrow(() -> new AdvertisementNotFoundException(advertisementRef.toString()));
+
+        Long quoteId = findQuoteIdByAdvertisementRef(advertisement.getAdvertisementRef().toString());
+        return adQuoteRepository.findById(quoteId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Quote not found for the given ID"
+                ));
     }
 
 }

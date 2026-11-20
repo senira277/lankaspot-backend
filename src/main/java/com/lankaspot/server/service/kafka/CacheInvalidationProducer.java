@@ -34,7 +34,9 @@ public class CacheInvalidationProducer {
         );
 
         // Keep events for the same quote on the same Kafka partition.
-        String key = String.valueOf(body.quoteId());
+        String key = body.advertisementRef() != null
+                ? body.advertisementRef().toString()
+                : String.valueOf(body.quoteId());
 
         log.info(
                 "Publishing cache invalidation event. eventId={}, eventType={}, quoteId={}, cacheVersion={}",

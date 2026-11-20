@@ -7,6 +7,7 @@ import com.lankaspot.server.service.AuditLogService;
 import com.lankaspot.server.service.DiscountCodeService;
 import com.lankaspot.server.service.kafka.EmailSendingProducer;
 import com.lankaspot.server.service.reviewer.ReviewerQueueService;
+import com.lankaspot.server.service.LiveAdCardService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +68,7 @@ public class PayhereNotifyService {
     private final ReviewerQueueService reviewerQueueService;
     private final AdvertiserService advertiserService;
     private final EmailSendingProducer emailSendingProducer;
+    private final LiveAdCardService liveAdCardService;
 
     @Value("${lankaspot.frontend.base-url}")
     private String baseUrl;
@@ -231,8 +233,6 @@ public class PayhereNotifyService {
 
 
             Advertisement savedAd = advertisementRepository.save(ad);
-
-
 
             for (AdvertisementTier t : tiers) {
                 AdvertisementTierAssignment a = new AdvertisementTierAssignment();

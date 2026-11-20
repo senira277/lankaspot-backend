@@ -1,4 +1,4 @@
-package com.lankaspot.server.dto.advertiser.retrieve;
+package com.lankaspot.server.dto.common;
 
 import com.lankaspot.server.dto.advertiser.advertisement.FunctionalGroupDTO;
 import com.lankaspot.server.enums.AdQuoteStatus;
@@ -7,7 +7,6 @@ import com.lankaspot.server.enums.ReviewerApprovalStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 public record QuoteDTO(
@@ -38,6 +37,7 @@ public record QuoteDTO(
     Long districtId,
     String town,
     String nearestLandmark,
+    BigDecimal distanceToNearestLandmarkInKm,
     String address,
 
     String coverImage,

@@ -1,4 +1,4 @@
-package com.lankaspot.server.dto.advertiser.retrieve;
+package com.lankaspot.server.dto.common;
 
 import com.lankaspot.server.enums.MediaStatus;
 import com.lankaspot.server.enums.MediaType;

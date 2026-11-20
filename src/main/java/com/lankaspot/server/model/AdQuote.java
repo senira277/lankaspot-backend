@@ -69,6 +69,9 @@ public class AdQuote {
     @Column(name = "nearest_landmark", nullable = false, length = 100, updatable = false)
     private String nearestLandmark;
 
+    @Column(name = "distance_to_nearest_landmark_in_km", precision = 10, scale = 2)
+    private BigDecimal distanceToNearestLandmarkInKm;
+
     @Column(name = "address", columnDefinition = "TEXT", updatable = false)
     private String address;
 

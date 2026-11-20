@@ -46,6 +46,8 @@ public class SavePropertyInfoRequest {
     @Valid
     private FunctionalGroupDTO functionalGroup;
 
+    private BigDecimal distanceToNearestLandmarkInKm;
+
     @NotBlank
     @Size(max = 100)
     private String town;

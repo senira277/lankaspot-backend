@@ -33,6 +33,7 @@ public interface AdQuoteUpdateRepository extends Repository<AdQuote, Long> {
                    city_id = :cityId,
                    town = :town,
                    nearest_landmark = :nearestLandmark,
+                   distance_to_nearest_landmark_in_km = :distanceToNearestLandmarkInKm,
                    address = cast(:address as text),
                    version = version + 1
              where id = :id
@@ -50,6 +51,7 @@ public interface AdQuoteUpdateRepository extends Repository<AdQuote, Long> {
                            @Param("cityId") Long cityId,
                            @Param("town") String town,
                            @Param("nearestLandmark") String nearestLandmark,
+                           @Param("distanceToNearestLandmarkInKm") BigDecimal distanceToNearestLandmarkInKm,
                            @Param("address") String address);
 
     @Modifying(flushAutomatically = true)

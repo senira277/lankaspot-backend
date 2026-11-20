@@ -12,6 +12,10 @@ import com.lankaspot.server.dto.advertiser.savePropertyInfo.SaveAdvertPropertyIn
 import com.lankaspot.server.dto.advertiser.savePropertyInfo.SavePropertyInfoRequest;
 import com.lankaspot.server.dto.advertiser.subscription.*;
 import com.lankaspot.server.dto.advertiser.uploads.*;
+import com.lankaspot.server.dto.common.ContactDTO;
+import com.lankaspot.server.dto.common.FeatureDefDTO;
+import com.lankaspot.server.dto.common.MediaDefDTO;
+import com.lankaspot.server.dto.common.QuoteDTO;
 import com.lankaspot.server.event.model.cacheInvalidation.CacheInvalidationBody;
 import com.lankaspot.server.enums.*;
 import com.lankaspot.server.event.model.notification.NotificationEventBody;
@@ -84,6 +88,7 @@ public class AdvertiserService {
     private final NotificationProducer notificationProducer;
     private final UtilService utilService;
     private final FunctionalGroupRepository functionalGroupRepository;
+    private final LiveAdCardService liveAdCardService;
 
     /**
      * Saves step 1.
@@ -190,6 +195,7 @@ public class AdvertiserService {
 
         try {
             // The newly selected cover replaces the old cover.
+            log.info("Saving media to the quote: quoteRef={}, existingMediaCount={}, newMediaCount={}, primaryIndex={}", quoteRef, existingMedia.size(), uploadedAssets.size(), primaryIndex);
             existingMedia.forEach(media -> media.setPrimary(false));
 
             int nextSortOrder = existingMedia.stream()
@@ -215,8 +221,9 @@ public class AdvertiserService {
 
                 newMedia.add(media);
             }
-
             adQuoteMediaRepository.saveAll(newMedia);
+            log.info("Saved media to the quote successfully!");
+
             adQuoteMediaRepository.flush();
             adQuoteRepository.updateLastCompletedStep(quoteRef, 2);
 
@@ -418,6 +425,7 @@ public class AdvertiserService {
                 quote.getCity().getDistrict().getId(),
                 quote.getTown(),
                 quote.getNearestLandmark(),
+                quote.getDistanceToNearestLandmarkInKm(),
                 quote.getAddress(),
                 coverImage,
                 quote.getReviewerApprovalStatus()
@@ -514,6 +522,7 @@ public class AdvertiserService {
                 quote.getCity().getDistrict().getId(),
                 quote.getTown(),
                 quote.getNearestLandmark(),
+                quote.getDistanceToNearestLandmarkInKm(),
                 quote.getAddress(),
                 coverImage,
                 quote.getReviewerApprovalStatus()
@@ -1404,6 +1413,7 @@ public class AdvertiserService {
                     .orElseThrow(() -> new AdvertisementNotFoundException(quote.getAdvertisementRef().toString()));
             advertisement.setStatus(AdvertisementStatus.PENDING_REVIEW);
             advertisementRepository.save(advertisement);
+            liveAdCardService.upsert(advertisement, quote);
 
             // enqueue the advertisement for the resubmit queue
             reviewerQueueService.enqueueAdvertisementFromResubmitQueue(advertisement);
@@ -1470,6 +1480,7 @@ public class AdvertiserService {
         quote.setAdvertiserId(advertiserId);
         quote.setCategory(category);
         quote.setTitle(title);
+        quote.setDistanceToNearestLandmarkInKm(request.getDistanceToNearestLandmarkInKm());
         quote.setFunctionalGroup(request.getFunctionalGroup() != null ? functionalGroupRepository.findById(request.getFunctionalGroup().id()).orElse(null) : null);
         quote.setSlug(createSlug(title, advertisementRef));
         quote.setDescription(blankToNull(request.getDescription()));
@@ -1511,6 +1522,7 @@ public class AdvertiserService {
                 city.getId(),
                 request.getTown().trim(),
                 request.getNearestLandmark().trim(),
+                request.getDistanceToNearestLandmarkInKm(),
                 blankToNull(request.getAddress()));
         if (updated != 1) {
             // Edited elsewhere (version moved on) or purchased since we loaded it.
@@ -1542,6 +1554,7 @@ public class AdvertiserService {
                 city.getId(),
                 request.getTown().trim(),
                 request.getNearestLandmark().trim(),
+                request.getDistanceToNearestLandmarkInKm(),
                 blankToNull(request.getAddress()));
         if (updated != 1) {
             // Edited elsewhere (version moved on) or purchased since we loaded it.
@@ -1649,8 +1662,8 @@ public class AdvertiserService {
                 } catch (NumberFormatException e) {
                     throw new InvalidFeatureValueException(feature.getName(), "must be a number");
                 }
-                if (number.signum() <= 0) {
-                    throw new InvalidFeatureValueException(feature.getName(), "must be greater than 0");
+                if (number.signum() < 0) {
+                    throw new InvalidFeatureValueException(feature.getName(), "must not be a negative number");
                 }
                 String plain = number.stripTrailingZeros().toPlainString();
                 if (plain.length() > FEATURE_VALUE_MAX_LENGTH) {

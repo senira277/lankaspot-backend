@@ -26,6 +26,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api/test/public/**",
                                 "/api/v1/open-retrievals/**",
+                                "/api/v1/listings/**",
                                 "/api/v1/public/**"
                         ).permitAll()
                         .anyRequest().authenticated()

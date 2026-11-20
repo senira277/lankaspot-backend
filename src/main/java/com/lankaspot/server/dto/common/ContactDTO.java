@@ -1,4 +1,4 @@
-package com.lankaspot.server.dto.advertiser.retrieve;
+package com.lankaspot.server.dto.common;
 
 public record ContactDTO(
         String phoneNumber

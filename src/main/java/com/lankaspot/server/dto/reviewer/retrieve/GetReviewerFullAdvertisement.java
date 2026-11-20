@@ -1,9 +1,9 @@
 package com.lankaspot.server.dto.reviewer.retrieve;
 
-import com.lankaspot.server.dto.advertiser.retrieve.ContactDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.FeatureDefDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.MediaDefDTO;
-import com.lankaspot.server.dto.advertiser.retrieve.QuoteDTO;
+import com.lankaspot.server.dto.common.ContactDTO;
+import com.lankaspot.server.dto.common.FeatureDefDTO;
+import com.lankaspot.server.dto.common.MediaDefDTO;
+import com.lankaspot.server.dto.common.QuoteDTO;
 
 import java.util.List;
 
