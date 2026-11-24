@@ -6,6 +6,7 @@ import com.lankaspot.server.dto.common.ContactDTO;
 import com.lankaspot.server.dto.common.FeatureDefDTO;
 import com.lankaspot.server.dto.common.MediaDefDTO;
 import com.lankaspot.server.dto.common.QuoteDTO;
+import com.lankaspot.server.dto.listings.GetFullAdvertisement;
 import com.lankaspot.server.enums.ContactStatus;
 import com.lankaspot.server.enums.EntityMappingType;
 import com.lankaspot.server.enums.MediaStatus;
@@ -15,6 +16,7 @@ import com.lankaspot.server.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -33,14 +35,23 @@ public class AdvertisementService {
     private final UserRepository userRepository;
 
 
+    @Transactional(readOnly = true)
     public QuoteDTO getQuoteByQuoteId(Long quoteId) {
-        AdQuote quote = adQuoteRepository.findById(quoteId)
+//        AdQuote quote = adQuoteRepository.findById(quoteId)
+//                .orElseThrow(() -> {
+//                    log.warn("Quote not found. quoteId={}", quoteId);
+//                    return new IllegalArgumentException(
+//                            "Quote not found for the given ID"
+//                    );
+//                });
+        AdQuote quote = adQuoteRepository.findByIdWithFunctionalGroup(quoteId)
                 .orElseThrow(() -> {
                     log.warn("Quote not found. quoteId={}", quoteId);
                     return new IllegalArgumentException(
                             "Quote not found for the given ID"
                     );
                 });
+
         List<MediaDefDTO> media = adQuoteMediaRepository
                 .findByAdQuote_IdOrderBySortOrderAscIdAsc(quote.getId())
                 .stream()
@@ -84,6 +95,7 @@ public class AdvertisementService {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<FeatureDefDTO> getAllFeaturesByQuoteId(Long quoteId) {
         AdQuote quote = adQuoteRepository.findById(quoteId)
                 .orElseThrow(() -> {
@@ -107,6 +119,19 @@ public class AdvertisementService {
     public List<ContactDTO> getAllContactsByKeycloakUserId(String keycloakUserId) {
         return contactRepository.findByUser_KeycloakUserIdAndStatus(
                 keycloakUserId,
+                ContactStatus.VERIFIED
+        ).stream()
+                .map(c -> new ContactDTO(
+                        c.getPhoneNumber()
+                ))
+                .toList();
+    }
+
+    public List<ContactDTO> getAllContactsByAdvertisementRef(String advertisementRef) {
+        Advertisement ad = advertisementRepository.findByAdvertisementRef(UUID.fromString(advertisementRef))
+                .orElseThrow(() -> new AdvertisementNotFoundException(advertisementRef));
+        return contactRepository.findByUser_IdAndStatus(
+                ad.getAdvertiser().getId(),
                 ContactStatus.VERIFIED
         ).stream()
                 .map(c -> new ContactDTO(
@@ -174,6 +199,7 @@ public class AdvertisementService {
         return policy.getId();
     }
 
+    @Transactional(readOnly = true)
     public AdvertisementDTO getAdvertisementByRef(String advertisementRef, String keycloakUserId) {
         Advertisement advertisement = advertisementRepository.findByAdvertisementRef(UUID.fromString(advertisementRef))
                 .orElseThrow(() -> new AdvertisementNotFoundException(advertisementRef));
@@ -193,6 +219,23 @@ public class AdvertisementService {
                 mediaDefDTOs,
                 featureDefDTOs,
                 contactDTOs
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public GetFullAdvertisement getFullAdvertisementWithoutContact(String advertisementRef) {
+        Advertisement advertisement = advertisementRepository.findByAdvertisementRef(UUID.fromString(advertisementRef))
+                .orElseThrow(() -> new AdvertisementNotFoundException(advertisementRef));
+
+        Long quoteId = findQuoteIdByAdvertisementRef(advertisement.getAdvertisementRef().toString());
+        QuoteDTO quoteDTO = getQuoteByQuoteId(quoteId);
+        List<MediaDefDTO> mediaDefDTOs = getAllMediaByQuoteId(quoteId);
+        List<FeatureDefDTO> featureDefDTOs = getAllFeaturesByQuoteId(quoteId);
+
+        return new GetFullAdvertisement(
+                quoteDTO,
+                featureDefDTOs,
+                mediaDefDTOs
         );
     }
 

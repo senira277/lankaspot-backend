@@ -13,17 +13,16 @@ import com.lankaspot.server.exception.PolicyNotFoundException;
 import com.lankaspot.server.model.*;
 import com.lankaspot.server.repository.*;
 import com.lankaspot.server.response.LankaspotResponse;
-import com.lankaspot.server.service.AdvertiserService;
-import com.lankaspot.server.service.AuditLogService;
+import com.lankaspot.server.service.*;
 import com.lankaspot.server.service.kafka.NotificationProducer;
 import com.lankaspot.server.service.notification.NotificationService;
-import com.lankaspot.server.service.LiveAdCardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -45,6 +44,10 @@ public class ReviewerService {
     private final NotificationProducer notificationProducer;
     private final NotificationService notificationService;
     private final LiveAdCardService liveAdCardService;
+    private final TopAdService topAdService;
+    private final PropertyService propertyService;
+    private final AdQuoteTierRepository adQuoteTierRepository;
+
 
     //get review queue for reviewer
     @Transactional(readOnly = true)
@@ -168,6 +171,25 @@ public class ReviewerService {
             if(!quoteRejected.get() && !anyMediaRejected.get()) {
                 //Reviewer APPROVED
                 //update all required
+
+                // update tier activeAt for the quote tiers
+                List<AdQuoteTier> quoteTiers = adQuoteTierRepository.findByAdQuote_Id(quote.getId());
+                quoteTiers.forEach(quoteTier -> {
+                    quoteTier.setActiveAt(LocalDateTime.now());
+                    adQuoteTierRepository.save(quoteTier);
+                });
+
+                // if TOP_AD anyMatch, create a LiveTopAd record for the advertisement
+                boolean isTopAd = quoteTiers.stream()
+                        .anyMatch(quoteTier -> Objects.equals(quoteTier.getAdvertisementTier().getCode(), "TOP_AD"));
+                if(isTopAd) {
+                    topAdService.createLiveTopAd(advertisement);
+                }
+
+                //update publishedAt for the advertisement
+                advertisementRepository.updatePublishedAtById(advertisement.getId(), LocalDateTime.now());
+
+
 
 
                 //publish notification for the advertiser

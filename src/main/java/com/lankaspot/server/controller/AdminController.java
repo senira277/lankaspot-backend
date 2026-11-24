@@ -30,6 +30,11 @@ public class AdminController {
         return ResponseEntity.ok(adminListingService.invalidateAdvertisementCaches(advertisementRef, refresh));
     }
 
+    @PostMapping("/cache-invalidate-all-advertisements")
+    public ResponseEntity<LankaspotResponse<Void>> invalidateAllAdvertisementCaches() {
+        return ResponseEntity.ok(adminListingService.invalidateAllAdvertisementCaches());
+    }
+
     @PostMapping("/cache-advertisement")
     public ResponseEntity<LankaspotResponse<UUID>> cacheAdvertisement(@RequestParam UUID advertisementRef){
         return ResponseEntity.ok(adminListingService.cacheAdvertisement(advertisementRef));

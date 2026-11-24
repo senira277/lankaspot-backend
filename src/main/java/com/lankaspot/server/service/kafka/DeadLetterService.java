@@ -124,7 +124,10 @@ public class DeadLetterService {
 
         try {
             return objectMapper.treeToValue(
-                    objectMapper.valueToTree(payload).get("id"),
+                    objectMapper.valueToTree(payload).get("eventId")
+                            != null
+                            ? objectMapper.valueToTree(payload).get("eventId")
+                            : objectMapper.valueToTree(payload).get("id"),
                     java.util.UUID.class
             );
         } catch (Exception e) {

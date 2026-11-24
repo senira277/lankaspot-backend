@@ -1,4 +1,3 @@
-
 package com.lankaspot.server.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
@@ -13,6 +12,16 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic cacheInvalidationTopic(
             @Value("${lankaspot.kafka.topics.cache-invalidation}") String topicName
+    ) {
+        return TopicBuilder.name(topicName)
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic analyticsEventsTopic(
+            @Value("${lankaspot.kafka.topics.analytics-events:analytics-events}") String topicName
     ) {
         return TopicBuilder.name(topicName)
                 .partitions(3)

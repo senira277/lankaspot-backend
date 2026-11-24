@@ -27,7 +27,11 @@ public class SecurityConfig {
                                 "/api/test/public/**",
                                 "/api/v1/open-retrievals/**",
                                 "/api/v1/listings/**",
-                                "/api/v1/public/**"
+                                "/api/v1/public/**",
+                                "/api/v1/consent/**",
+                                "/api/v1/record/*/analytics/view",
+                                "/api/v1/record/*/analytics/engagement/**",
+                                "/api/v1/record/*/analytics/contact-retrieved/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -7,4 +7,8 @@ import java.util.List;
 
 public interface AdQuoteTierRepository extends JpaRepository<AdQuoteTier, Long> {
     List<AdQuoteTier> findByAdQuote_Id(Long quoteId);
+
+
+
+    //custom query
 }

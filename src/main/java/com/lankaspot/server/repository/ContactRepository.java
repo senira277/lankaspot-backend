@@ -11,4 +11,5 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     boolean existsByUser_IdAndPhoneNumber(Long userId, String phoneNumber);
     boolean existsByUser_KeycloakUserIdAndPhoneNumber(String keycloakUserId, String phoneNumber);
     List<Contact> findByUser_KeycloakUserIdAndStatus(String keycloakUserId, com.lankaspot.server.enums.ContactStatus status);
+    List<Contact> findByUser_IdAndStatus(Long userId, com.lankaspot.server.enums.ContactStatus status);
 }

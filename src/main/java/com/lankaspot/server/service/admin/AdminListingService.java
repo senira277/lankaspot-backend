@@ -66,6 +66,21 @@ public class AdminListingService {
         );
     }
 
+    public LankaspotResponse<Void> invalidateAllAdvertisementCaches() {
+        cacheInvalidationProducer.publish(new CacheInvalidationBody(
+                CacheInvalidationEventType.ALL_ADVERTISEMENTS_CACHE_INVALIDATED,
+                null,
+                null,
+                0L,
+                null
+        ));
+
+        return LankaspotResponse.success(
+                null,
+                "All advertisement cache invalidation event published"
+        );
+    }
+
     @Transactional
     public LankaspotResponse<UUID> cacheAdvertisement(UUID advertisementRef) {
         Advertisement advertisement = advertisementRepository.findByAdvertisementRef(advertisementRef)

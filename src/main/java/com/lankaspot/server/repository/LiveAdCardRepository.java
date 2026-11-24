@@ -23,20 +23,68 @@ public interface LiveAdCardRepository extends JpaRepository<LiveAdCard, Long> {
           on a.advertisementRef = c.advertisementId
         where a.status = com.lankaspot.server.enums.AdvertisementStatus.ACTIVE
           and (c.expiresAt is null or c.expiresAt > :now)
+          and (:functionalGroupId is null or c.functionalGroupId = :functionalGroupId)
           and (:categoryId is null or c.categoryId = :categoryId)
           and (:cityId is null or c.cityId = :cityId)
           and (:districtId is null or c.districtId = :districtId)
           and (:minPrice is null or c.price >= :minPrice)
           and (:maxPrice is null or c.price <= :maxPrice)
-        order by c.sortOrder asc, c.queueNumber asc, c.advertisementId asc
+        order by a.publishedAt asc nulls last, c.advertisementId asc
         """)
-    Page<LiveAdCard> search(@Param("categoryId") Long categoryId,
+    Page<LiveAdCard> search(@Param("functionalGroupId") Long functionalGroupId,
+                            @Param("categoryId") Long categoryId,
                             @Param("cityId") Long cityId,
                             @Param("districtId") Long districtId,
                             @Param("minPrice") java.math.BigDecimal minPrice,
                             @Param("maxPrice") java.math.BigDecimal maxPrice,
                             @Param("now") LocalDateTime now,
                             Pageable pageable);
+
+    @Query("""
+        select c from LiveAdCard c join Advertisement a
+          on a.advertisementRef = c.advertisementId
+        where c.advertisementId in :advertisementIds
+          and a.status = com.lankaspot.server.enums.AdvertisementStatus.ACTIVE
+          and (c.expiresAt is null or c.expiresAt > :now)
+          and (:functionalGroupId is null or c.functionalGroupId = :functionalGroupId)
+          and (:categoryId is null or c.categoryId = :categoryId)
+          and (:cityId is null or c.cityId = :cityId)
+          and (:districtId is null or c.districtId = :districtId)
+          and (:minPrice is null or c.price >= :minPrice)
+          and (:maxPrice is null or c.price <= :maxPrice)
+        """)
+    List<LiveAdCard> findForTopAds(@Param("advertisementIds") Collection<UUID> advertisementIds,
+                                   @Param("functionalGroupId") Long functionalGroupId,
+                                   @Param("categoryId") Long categoryId,
+                                   @Param("cityId") Long cityId,
+                                   @Param("districtId") Long districtId,
+                                   @Param("minPrice") java.math.BigDecimal minPrice,
+                                   @Param("maxPrice") java.math.BigDecimal maxPrice,
+                                   @Param("now") LocalDateTime now);
+
+    @Query("""
+        select c from LiveAdCard c join Advertisement a
+          on a.advertisementRef = c.advertisementId
+        where (:excludedIds is null or c.advertisementId not in :excludedIds)
+          and a.status = com.lankaspot.server.enums.AdvertisementStatus.ACTIVE
+          and (c.expiresAt is null or c.expiresAt > :now)
+          and (:functionalGroupId is null or c.functionalGroupId = :functionalGroupId)
+          and (:categoryId is null or c.categoryId = :categoryId)
+          and (:cityId is null or c.cityId = :cityId)
+          and (:districtId is null or c.districtId = :districtId)
+          and (:minPrice is null or c.price >= :minPrice)
+          and (:maxPrice is null or c.price <= :maxPrice)
+        order by a.publishedAt asc nulls last, c.advertisementId asc
+        """)
+    Page<LiveAdCard> searchExcluding(@Param("excludedIds") Collection<UUID> excludedIds,
+                                     @Param("functionalGroupId") Long functionalGroupId,
+                                     @Param("categoryId") Long categoryId,
+                                     @Param("cityId") Long cityId,
+                                     @Param("districtId") Long districtId,
+                                     @Param("minPrice") java.math.BigDecimal minPrice,
+                                     @Param("maxPrice") java.math.BigDecimal maxPrice,
+                                     @Param("now") LocalDateTime now,
+                                     Pageable pageable);
 
     @Query("""
         select new com.lankaspot.server.dto.listings.ListingFeatureDTO(

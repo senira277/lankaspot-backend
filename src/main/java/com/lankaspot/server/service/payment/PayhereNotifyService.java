@@ -2,12 +2,9 @@ package com.lankaspot.server.service.payment;
 
 import com.lankaspot.server.event.model.EmailSending.EmailEventBody;
 import com.lankaspot.server.event.model.cacheInvalidation.CacheInvalidationBody;
-import com.lankaspot.server.service.AdvertiserService;
-import com.lankaspot.server.service.AuditLogService;
-import com.lankaspot.server.service.DiscountCodeService;
+import com.lankaspot.server.service.*;
 import com.lankaspot.server.service.kafka.EmailSendingProducer;
 import com.lankaspot.server.service.reviewer.ReviewerQueueService;
-import com.lankaspot.server.service.LiveAdCardService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +65,7 @@ public class PayhereNotifyService {
     private final ReviewerQueueService reviewerQueueService;
     private final AdvertiserService advertiserService;
     private final EmailSendingProducer emailSendingProducer;
-    private final LiveAdCardService liveAdCardService;
+    private final TopAdService topAdService;
 
     @Value("${lankaspot.frontend.base-url}")
     private String baseUrl;
@@ -317,6 +314,11 @@ public class PayhereNotifyService {
                             "advertisementId", ad.getId(),
                             "advertisementRef", ad.getAdvertisementRef().toString(),
                             "quoteRef", reg.getQuoteRef()));
+
+            // put into the LiveTopAd if TOP_AD tier is selected
+            if (tiers.stream().anyMatch(t -> t.getName().equalsIgnoreCase("TOP_AD"))) {
+                topAdService.createLiveTopAd(ad);
+            }
 
             quote.completeStep(5);
             // Add to the reviewer queue for manual approval

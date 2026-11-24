@@ -35,4 +35,6 @@ public class AdQuoteTier {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    private LocalDateTime ActiveAt;
+
 }

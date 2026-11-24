@@ -4,6 +4,7 @@ import com.lankaspot.server.enums.PaymentRegistryStatus;
 import com.lankaspot.server.enums.PaymentStatus;
 import com.lankaspot.server.enums.ReviewerApprovalStatus;
 import com.lankaspot.server.model.AdQuote;
+import com.lankaspot.server.model.AdQuoteTier;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -90,7 +91,16 @@ public interface AdQuoteRepository extends JpaRepository<AdQuote, Long> {
     );
     boolean existsByIdAndAdvertiserId(Long quoteId, UUID advertiserId);
 
-
+    @Query("""
+    SELECT q
+    FROM AdQuote q
+    LEFT JOIN FETCH q.functionalGroup
+    JOIN FETCH q.category
+    JOIN FETCH q.city city
+    JOIN FETCH city.district
+    WHERE q.id = :quoteId
+""")
+    Optional<AdQuote> findByIdWithFunctionalGroup(@Param("quoteId") Long quoteId);
 
 
 

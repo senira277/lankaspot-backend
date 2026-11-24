@@ -23,6 +23,20 @@ public class CacheInvalidationConsumer {
         advertisementCacheService.invalidateAdvertisementCache(event.body().advertiserId(),event.body().quoteId());
         listingsService.incrementListingVersion();
 
+        if (event.body().eventType()
+                == com.lankaspot.server.enums.CacheInvalidationEventType.ALL_ADVERTISEMENTS_CACHE_INVALIDATED) {
+            listingsService.invalidateAllAdvertisementCaches();
+            return;
+        }
+
+        if (event.body().eventType()
+                == com.lankaspot.server.enums.CacheInvalidationEventType.TOP_AD_UPDATED
+                || event.body().eventType()
+                == com.lankaspot.server.enums.CacheInvalidationEventType.TOP_AD_DELETED) {
+            listingsService.refreshTopAdCache();
+            return;
+        }
+
         UUID advertisementRef = event.body().advertisementRef();
         boolean deleted = event.body().eventType()
                 == com.lankaspot.server.enums.CacheInvalidationEventType.ADVERTISEMENT_FEATURES_TIERS_DELETED
