@@ -1,23 +1,30 @@
 package com.lankaspot.server.service.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lankaspot.server.dto.location.GeoapifyGeocodingResponse;
 import com.lankaspot.server.enums.CacheInvalidationEventType;
 import com.lankaspot.server.enums.EmailEventType;
 import com.lankaspot.server.event.model.EmailSending.EmailEventBody;
 import com.lankaspot.server.event.model.cacheInvalidation.CacheInvalidationBody;
+import com.lankaspot.server.geocoding.GeocodingClient;
 import com.lankaspot.server.model.AdQuote;
 import com.lankaspot.server.model.Advertisement;
 import com.lankaspot.server.repository.AdvertisementRepository;
 import com.lankaspot.server.response.LankaspotResponse;
 import com.lankaspot.server.service.AdvertisementService;
 import com.lankaspot.server.service.LiveAdCardService;
+import com.lankaspot.server.service.geocoding.GeocodingService;
 import com.lankaspot.server.service.kafka.CacheInvalidationProducer;
 import com.lankaspot.server.service.kafka.EmailSendingProducer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -96,4 +103,6 @@ public class AdminListingService {
                 "Advertisement cache refreshed"
         );
     }
+
+
 }

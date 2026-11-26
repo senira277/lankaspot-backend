@@ -75,6 +75,21 @@ public class AdQuote {
     @Column(name = "address", columnDefinition = "TEXT", updatable = false)
     private String address;
 
+    @Column(name = "latitude", precision = 10, scale = 7, updatable = false)
+    private BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 10, scale = 7, updatable = false)
+    private BigDecimal longitude;
+
+    @Column(name = "property_location_consent", nullable = false, updatable = false)
+    private boolean propertyLocationConsent;
+
+    @Column(name = "property_location_consent_text", columnDefinition = "TEXT", updatable = false)
+    private String propertyLocationConsentText;
+
+    @Column(name = "property_location_consent_version", length = 100, updatable = false)
+    private String propertyLocationConsentVersion;
+
     @OneToMany(mappedBy = "adQuote", cascade = CascadeType.PERSIST)
     private Set<AdQuoteFeature> features = new HashSet<>();
 

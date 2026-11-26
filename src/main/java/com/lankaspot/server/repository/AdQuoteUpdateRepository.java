@@ -35,6 +35,11 @@ public interface AdQuoteUpdateRepository extends Repository<AdQuote, Long> {
                    nearest_landmark = :nearestLandmark,
                    distance_to_nearest_landmark_in_km = :distanceToNearestLandmarkInKm,
                    address = cast(:address as text),
+                   latitude = :latitude,
+                   longitude = :longitude,
+                   property_location_consent = :propertyLocationConsent,
+                   property_location_consent_text = cast(:propertyLocationConsentText as text),
+                   property_location_consent_version = :propertyLocationConsentVersion,
                    version = version + 1
              where id = :id
                and version = :expectedVersion
@@ -52,7 +57,12 @@ public interface AdQuoteUpdateRepository extends Repository<AdQuote, Long> {
                            @Param("town") String town,
                            @Param("nearestLandmark") String nearestLandmark,
                            @Param("distanceToNearestLandmarkInKm") BigDecimal distanceToNearestLandmarkInKm,
-                           @Param("address") String address);
+                           @Param("address") String address,
+                           @Param("latitude") BigDecimal latitude,
+                           @Param("longitude") BigDecimal longitude,
+                           @Param("propertyLocationConsent") boolean propertyLocationConsent,
+                           @Param("propertyLocationConsentText") String propertyLocationConsentText,
+                           @Param("propertyLocationConsentVersion") String propertyLocationConsentVersion);
 
     @Modifying(flushAutomatically = true)
     @Query(value = "delete from ad_quote_features where ad_quote_id = :quoteId", nativeQuery = true)

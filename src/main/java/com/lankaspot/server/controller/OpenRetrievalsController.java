@@ -50,4 +50,9 @@ public class OpenRetrievalsController {
         log.info("Fetching all functional groups");
         return ResponseEntity.ok(openRetrievalService.getAllFunctionalGroups());
     }
+
+    @GetMapping("/get-property-location-consent")
+    public ResponseEntity<LankaspotResponse<PropertyLocationConsentDTO>> getPropertyLocationConsent() {
+        return ResponseEntity.ok(openRetrievalService.getPropertyLocationConsent());
+    }
 }

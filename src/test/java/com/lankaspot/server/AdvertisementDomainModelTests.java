@@ -14,9 +14,17 @@ class AdvertisementDomainModelTests {
     @Test
     void quoteStoresAContentSnapshotWithoutAEntityReference() {
         UUID ref = UUID.randomUUID();
-        AdQuote quote = new AdQuote(ref, 1, "House", "house",
-                "Description", BigDecimal.TEN, "Colombo", "Colombo",
-                "Area", "Address", "image-1");
+        AdQuote quote = new AdQuote();
+        quote.setAdvertisementRef(ref);
+        quote.setVersion(1);
+        quote.setTitle("House");
+        quote.setSlug("house");
+        quote.setDescription("Description");
+        quote.setPrice(BigDecimal.TEN);
+        quote.setTown("Colombo");
+        quote.setNearestLandmark("Area");
+        quote.setAddress("Address");
+        quote.setCreatedAt(java.time.LocalDateTime.now());
 
         assertEquals(ref, quote.getAdvertisementRef());
         assertEquals(1, quote.getVersion());

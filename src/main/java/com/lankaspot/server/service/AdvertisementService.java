@@ -90,6 +90,11 @@ public class AdvertisementService {
                 quote.getNearestLandmark(),
                 quote.getDistanceToNearestLandmarkInKm(),
                 quote.getAddress(),
+                quote.getLatitude(),
+                quote.getLongitude(),
+                quote.isPropertyLocationConsent(),
+                quote.getPropertyLocationConsentText(),
+                quote.getPropertyLocationConsentVersion(),
                 coverImage,
                 quote.getReviewerApprovalStatus()
         );

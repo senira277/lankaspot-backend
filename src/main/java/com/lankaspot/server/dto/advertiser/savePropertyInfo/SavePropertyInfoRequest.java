@@ -1,6 +1,10 @@
 package com.lankaspot.server.dto.advertiser.savePropertyInfo;
 
 import com.lankaspot.server.dto.advertiser.advertisement.FunctionalGroupDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
@@ -58,6 +62,26 @@ public class SavePropertyInfoRequest {
 
     @Size(max = 1000)
     private String address;
+
+    private boolean propertyLocationConsent;
+
+    @Digits(integer = 3, fraction = 7)
+    @DecimalMin("-90.0")
+    @DecimalMax("90.0")
+    private BigDecimal latitude;
+
+    @Digits(integer = 3, fraction = 7)
+    @DecimalMin("-180.0")
+    @DecimalMax("180.0")
+    private BigDecimal longitude;
+
+    @JsonIgnore
+    @AssertTrue(message = "Coordinates must be supplied only when property location consent is true")
+    public boolean isPropertyLocationConsentDataConsistent() {
+        return propertyLocationConsent
+                ? latitude != null && longitude != null
+                : latitude == null && longitude == null;
+    }
 
     /** Checked features only. */
     @Valid

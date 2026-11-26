@@ -89,6 +89,7 @@ public class AdvertiserService {
     private final UtilService utilService;
     private final FunctionalGroupRepository functionalGroupRepository;
     private final LiveAdCardService liveAdCardService;
+    private final PropertyLocationConsentService propertyLocationConsentService;
 
     /**
      * Saves step 1.
@@ -129,9 +130,21 @@ public class AdvertiserService {
 
             log.info("Features resolved: count={}", features.size());
 
+            PropertyLocationConsentService.Consent locationConsent =
+                    resolveLocationConsent(request.isPropertyLocationConsent());
+
             Long quoteId = existing == null
-                    ? createQuote(request, advertiserId, category, city, features)
-                    : updateQuote(existing, request, category, city, features);
+                    ? createQuote(request, advertiserId, category, city, features, locationConsent)
+                    : updateQuote(existing, request, category, city, features, locationConsent);
+
+            if (existing != null) {
+                publishCacheInvalidationToKafka(new CacheInvalidationBody(
+                        CacheInvalidationEventType.AD_QUOTE_UPDATED,
+                        quoteId,
+                        advertiserId,
+                        existing.getCacheVersion()
+                ));
+            }
 
             return LankaspotResponse.success(
                     new SaveAdvertPropertyInfoResponseData(quoteId),
@@ -427,6 +440,11 @@ public class AdvertiserService {
                 quote.getNearestLandmark(),
                 quote.getDistanceToNearestLandmarkInKm(),
                 quote.getAddress(),
+                quote.getLatitude(),
+                quote.getLongitude(),
+                quote.isPropertyLocationConsent(),
+                quote.getPropertyLocationConsentText(),
+                quote.getPropertyLocationConsentVersion(),
                 coverImage,
                 quote.getReviewerApprovalStatus()
         );
@@ -524,6 +542,11 @@ public class AdvertiserService {
                 quote.getNearestLandmark(),
                 quote.getDistanceToNearestLandmarkInKm(),
                 quote.getAddress(),
+                quote.getLatitude(),
+                quote.getLongitude(),
+                quote.isPropertyLocationConsent(),
+                quote.getPropertyLocationConsentText(),
+                quote.getPropertyLocationConsentVersion(),
                 coverImage,
                 quote.getReviewerApprovalStatus()
         );
@@ -899,7 +922,10 @@ public class AdvertiserService {
 
             log.info("Features resolved: count={}", features.size());
 
-            Long quoteId = amendUpdateQuote(existing, request, category, city, features);
+            PropertyLocationConsentService.Consent locationConsent =
+                    resolveLocationConsent(request.isPropertyLocationConsent());
+
+            Long quoteId = amendUpdateQuote(existing, request, category, city, features, locationConsent);
 
             // audit log
             auditLogService.record(
@@ -1470,7 +1496,14 @@ public class AdvertiserService {
         return tierIds.stream().map(found::get).toList();
     }
 
-    private Long createQuote(SavePropertyInfoRequest request, UUID advertiserId, Category category, City city, List<ResolvedFeature> features) {
+    private Long createQuote(
+            SavePropertyInfoRequest request,
+            UUID advertiserId,
+            Category category,
+            City city,
+            List<ResolvedFeature> features,
+            PropertyLocationConsentService.Consent locationConsent
+    ) {
         UUID advertisementRef = UUID.randomUUID();
         String title = request.getTitle().trim();
 
@@ -1490,6 +1523,11 @@ public class AdvertiserService {
         quote.completeStep(1);
         quote.setNearestLandmark(request.getNearestLandmark().trim());
         quote.setAddress(blankToNull(request.getAddress()));
+        quote.setLatitude(request.getLatitude());
+        quote.setLongitude(request.getLongitude());
+        quote.setPropertyLocationConsent(request.isPropertyLocationConsent());
+        quote.setPropertyLocationConsentText(locationConsent == null ? null : locationConsent.message());
+        quote.setPropertyLocationConsentVersion(locationConsent == null ? null : locationConsent.version());
         quote.setStatus(AdQuoteStatus.IN_COMPLETE);
         quote.setSource(AdSource.USER);
         features.forEach(f -> quote.getFeatures().add(new AdQuoteFeature(quote, f.feature(), f.value())));
@@ -1505,7 +1543,14 @@ public class AdvertiserService {
      * Updates the quote in place with explicit SQL (AdQuote's columns are not updatable through the
      * entity), increments the version, and replaces its selected features.
      */
-    private Long updateQuote(AdQuote existing, SavePropertyInfoRequest request, Category category, City city, List<ResolvedFeature> features) {
+    private Long updateQuote(
+            AdQuote existing,
+            SavePropertyInfoRequest request,
+            Category category,
+            City city,
+            List<ResolvedFeature> features,
+            PropertyLocationConsentService.Consent locationConsent
+    ) {
         Long quoteId = existing.getId();
         int expectedVersion = existing.getVersion();
         String title = request.getTitle().trim();
@@ -1523,7 +1568,12 @@ public class AdvertiserService {
                 request.getTown().trim(),
                 request.getNearestLandmark().trim(),
                 request.getDistanceToNearestLandmarkInKm(),
-                blankToNull(request.getAddress()));
+                blankToNull(request.getAddress()),
+                request.getLatitude(),
+                request.getLongitude(),
+                request.isPropertyLocationConsent(),
+                locationConsent == null ? null : locationConsent.message(),
+                locationConsent == null ? null : locationConsent.version());
         if (updated != 1) {
             // Edited elsewhere (version moved on) or purchased since we loaded it.
             throw new QuoteOutdatedException(quoteId);
@@ -1537,7 +1587,14 @@ public class AdvertiserService {
         return quoteId;
     }
 
-    private Long amendUpdateQuote(AdQuote existing, SavePropertyInfoRequest request, Category category, City city, List<ResolvedFeature> features) {
+    private Long amendUpdateQuote(
+            AdQuote existing,
+            SavePropertyInfoRequest request,
+            Category category,
+            City city,
+            List<ResolvedFeature> features,
+            PropertyLocationConsentService.Consent locationConsent
+    ) {
         Long quoteId = existing.getId();
         int expectedVersion = existing.getVersion();
         String title = request.getTitle().trim();
@@ -1555,7 +1612,12 @@ public class AdvertiserService {
                 request.getTown().trim(),
                 request.getNearestLandmark().trim(),
                 request.getDistanceToNearestLandmarkInKm(),
-                blankToNull(request.getAddress()));
+                blankToNull(request.getAddress()),
+                request.getLatitude(),
+                request.getLongitude(),
+                request.isPropertyLocationConsent(),
+                locationConsent == null ? null : locationConsent.message(),
+                locationConsent == null ? null : locationConsent.version());
         if (updated != 1) {
             // Edited elsewhere (version moved on) or purchased since we loaded it.
             throw new QuoteOutdatedException(quoteId);
@@ -1567,6 +1629,10 @@ public class AdvertiserService {
         log.info("Updated property info: quoteId={}, ref={}, newVersion={}, featureCount={}",
                 quoteId, existing.getAdvertisementRef(), expectedVersion + 1, features.size());
         return quoteId;
+    }
+
+    private PropertyLocationConsentService.Consent resolveLocationConsent(boolean consentGiven) {
+        return consentGiven ? propertyLocationConsentService.latestConsent() : null;
     }
 
 

@@ -22,6 +22,7 @@ public class OpenRetrievalService {
     private final CityRepository cityRepository;
     private final FeatureRepository featureRepository;
     private final FunctionalGroupRepository functionalGroupRepository;
+    private final PropertyLocationConsentService propertyLocationConsentService;
 
     public LankaspotResponse<AllCategories> getAllCategories() {
         List<CategoryDTO> categories = categoryRepository.findAll()
@@ -77,6 +78,15 @@ public class OpenRetrievalService {
         return LankaspotResponse.success(
                 new AllFunctionalGroups(functionalGroups),
                 "All functional groups retrieved successfully"
+        );
+    }
+
+    public LankaspotResponse<PropertyLocationConsentDTO> getPropertyLocationConsent() {
+        PropertyLocationConsentService.Consent consent =
+                propertyLocationConsentService.latestConsent();
+        return LankaspotResponse.success(
+                new PropertyLocationConsentDTO(consent.version(), consent.message()),
+                "Property location consent retrieved successfully"
         );
     }
 

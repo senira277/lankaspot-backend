@@ -1,7 +1,9 @@
 package com.lankaspot.server.controller;
 
+import com.lankaspot.server.dto.location.GeoapifyGeocodingResponse;
 import com.lankaspot.server.response.LankaspotResponse;
 import com.lankaspot.server.service.admin.AdminListingService;
+import com.lankaspot.server.service.geocoding.GeocodingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +21,7 @@ import java.util.UUID;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final AdminListingService adminListingService;
+    private final GeocodingService geocodingService;
 
     @GetMapping("/send-email")
     public ResponseEntity<LankaspotResponse<Void>> sendEmail() {
@@ -38,6 +41,11 @@ public class AdminController {
     @PostMapping("/cache-advertisement")
     public ResponseEntity<LankaspotResponse<UUID>> cacheAdvertisement(@RequestParam UUID advertisementRef){
         return ResponseEntity.ok(adminListingService.cacheAdvertisement(advertisementRef));
+    }
+
+    @PostMapping("/location/autocomplete")
+    public ResponseEntity<LankaspotResponse<GeoapifyGeocodingResponse>> autocomplete(@RequestParam String text) {
+        return ResponseEntity.ok(geocodingService.autocomplete(text));
     }
 
 }

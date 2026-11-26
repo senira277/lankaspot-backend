@@ -14,5 +14,7 @@ public class ApplicationProperties {
 
     private Long id;
     private String key;
+
+    @Column(columnDefinition = "TEXT")
     private String value;
 }

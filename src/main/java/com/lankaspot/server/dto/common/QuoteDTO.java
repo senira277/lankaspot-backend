@@ -39,10 +39,14 @@ public record QuoteDTO(
     String nearestLandmark,
     BigDecimal distanceToNearestLandmarkInKm,
     String address,
+    BigDecimal latitude,
+    BigDecimal longitude,
+    boolean propertyLocationConsent,
+    String propertyLocationConsentText,
+    String propertyLocationConsentVersion,
 
     String coverImage,
     ReviewerApprovalStatus reviewerApprovalStatus
 
 ){}
-
 
