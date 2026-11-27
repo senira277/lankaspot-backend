@@ -376,7 +376,8 @@ public class AdvertiserService {
                         new TypeReference<GetQuoteWithMediaResponseData>() {}
                 );
 
-        if (cachedData != null) {
+        if (cachedData != null && cachedData.quote().status() != AdQuoteStatus.IN_COMPLETE) {
+            log.info("Cache HIT for get QUOTE: {}", quoteRef);
             return LankaspotResponse.success(
                     cachedData,
                     "Quote retrieved successfully"
@@ -401,7 +402,8 @@ public class AdvertiserService {
                         f.getFeature().getId(),
                         f.getFeature().getName(),
                         f.getValue(),
-                        f.getFeature().getUnit()
+                        f.getFeature().getUnit(),
+                        f.getFeature().getIcon()
                 ))
                 .sorted(Comparator.comparing(FeatureDefDTO::id))
                 .toList();
@@ -503,7 +505,8 @@ public class AdvertiserService {
                         f.getFeature().getId(),
                         f.getFeature().getName(),
                         f.getValue(),
-                        f.getFeature().getUnit()))
+                        f.getFeature().getUnit(),
+                        f.getFeature().getIcon()))
                 .sorted(Comparator.comparing(FeatureDefDTO::id))
                 .toList();
 

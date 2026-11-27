@@ -190,7 +190,7 @@ public class ReviewerService {
                 advertisementRepository.updatePublishedAtById(advertisement.getId(), LocalDateTime.now());
 
 
-
+                String redirectUrl = NotificationConstants.AD_APPROVED_REDIRECT_TO  + advertisement.getAdvertisementRef().toString();
 
                 //publish notification for the advertiser
                 notificationProducer.publish(
@@ -199,7 +199,7 @@ public class ReviewerService {
                                 advertiserId,
                                 NotificationConstants.AD_APPROVED_TITLE,
                                 NotificationConstants.AD_APPROVED_DESCRIPTION,
-                                NotificationConstants.AD_APPROVED_REDIRECT_TO,
+                                redirectUrl,
                                 NotificationType.ADVERTISEMENT_APPROVED
                         ), advertiserId)
                 );

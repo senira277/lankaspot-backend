@@ -88,7 +88,7 @@ public interface LiveAdCardRepository extends JpaRepository<LiveAdCard, Long> {
 
     @Query("""
         select new com.lankaspot.server.dto.listings.ListingFeatureDTO(
-          qf.adQuote.advertisementRef, f.name, qf.value, f.unit)
+          qf.adQuote.advertisementRef, f.name, qf.value, f.unit, f.icon)
         from AdQuoteFeature qf join qf.feature f
         where qf.adQuote.advertisementRef in :advertisementIds
         order by qf.adQuote.advertisementRef, f.sortOrder, f.id

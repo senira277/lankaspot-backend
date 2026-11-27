@@ -40,7 +40,7 @@ public class ListingsService {
 
     public static final String LISTING_VERSION_KEY = "lankaspot:public:listings:version";
     private static final String LISTING_KEY = "lankaspot:public:listings:v%s:%s";
-    private static final String FEATURE_KEY = "lankaspot:ad:features:%s";
+    private static final String FEATURE_KEY = "lankaspot:ad:features:v2:%s";
     private static final String TIER_KEY = "lankaspot:ad:tiers:%s";
     private static final String TOP_AD_ALL_KEY = "lankaspot:top-ads:all";
     private static final String TOP_AD_CATEGORY_KEY = "lankaspot:top-ads:category:%d";
@@ -338,7 +338,7 @@ public class ListingsService {
 
     public void refreshFeatureCache(UUID advertisementId) {
         List<ListingFeatureDTO> rows = liveAdCardRepository.findFeaturesByAdvertisementIds(List.of(advertisementId))
-                .stream().map(f -> new ListingFeatureDTO(f.name(), f.value(), f.unit())).toList();
+                .stream().map(f -> new ListingFeatureDTO(f.name(), f.value(), f.unit(), f.icon())).toList();
         try {
             redis.opsForValue().set(FEATURE_KEY.formatted(advertisementId),
                     objectMapper.writeValueAsString(rows), Duration.ofDays(30));
@@ -392,7 +392,7 @@ public class ListingsService {
             Map<UUID, String> serialized = new HashMap<>();
             for (UUID id : missing) {
                 List<ListingFeatureDTO> value = grouped.getOrDefault(id, List.of()).stream()
-                        .map(f -> new ListingFeatureDTO(f.name(), f.value(), f.unit())).toList();
+                        .map(f -> new ListingFeatureDTO(f.name(), f.value(), f.unit(), f.icon())).toList();
                 result.put(id, value);
                 try { serialized.put(id, objectMapper.writeValueAsString(value)); }
                 catch (Exception e) { log.warn("Could not serialize features for {}", id, e); }

@@ -13,4 +13,9 @@ public class FeatureDTO {
     private String name;
     private FeatureValueType valueType;
     private String unit;
+    private String icon;
+
+    public FeatureDTO(Long id, String name, FeatureValueType valueType, String unit) {
+        this(id, name, valueType, unit, null);
+    }
 }

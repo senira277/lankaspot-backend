@@ -114,7 +114,8 @@ public class AdvertisementService {
                         f.getFeature().getId(),
                         f.getFeature().getName(),
                         f.getValue(),
-                        f.getFeature().getUnit()
+                        f.getFeature().getUnit(),
+                        f.getFeature().getIcon()
                 ))
                 .sorted(Comparator.comparing(FeatureDefDTO::id))
                 .toList();

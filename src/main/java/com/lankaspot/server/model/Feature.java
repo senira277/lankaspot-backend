@@ -26,6 +26,9 @@ public class Feature {
     @Column(name = "unit", length = 30)   // optional: "sq ft", "km", "months"
     private String unit;
 
+    @Column(name = "icon", length = 50)
+    private String icon;
+
     @Column(name = "slug", nullable = false, unique = true, length = 100)
     private String slug;
 

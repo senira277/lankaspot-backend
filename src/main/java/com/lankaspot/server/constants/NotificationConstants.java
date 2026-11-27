@@ -10,7 +10,7 @@ public final class NotificationConstants {
     // -------------------------------------------------------------------------
 
     public static final String ADVERTISEMENT_ROUTE =
-            "/advertiser/advertisements/";
+            "/listings/";
 
     public static final String ADVERTISEMENTS_ROUTE =
             "/advertiser/advertisements";

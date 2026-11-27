@@ -116,6 +116,7 @@ public class OpenRetrievalService {
         dto.setName(feature.getName());
         dto.setValueType(feature.getValueType());
         dto.setUnit(feature.getUnit());
+        dto.setIcon(feature.getIcon());
         return dto;
     }
 }
